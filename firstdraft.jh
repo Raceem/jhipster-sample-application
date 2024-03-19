@@ -1,0 +1,100 @@
+enum PhysicianLevel {
+    CONSULTANT,
+    SENIOR_REGISTRAR,
+    REGISTRAR,
+    SENIOR_HOUSE_OFFICER,
+    SENIOR_RESIDENT,
+    JUNIOR_RESIDENT,
+    GFP,
+    INTERN
+}
+
+enum RequestStatus {
+    NEW,
+    WAITING_APPROVAL,
+    APPROVED,
+    DENIED
+}
+
+enum RequestType {
+    LEAVE,
+    SHIFT_SWAP,
+    TIME_OFF,
+    SPECIFIC_SHIFT
+}
+
+enum ShiftType {
+    MORNING,
+    EVENING,
+    NIGHT
+}
+
+enum TeamType {
+    ADULT,
+    PEDIATRIC
+}
+
+enum PhysicianPosition {
+    ACUTE_CARE,
+    AMBULATORY_CARE,
+    PEDIATRIC
+}
+
+entity Physician {
+    fullName String required,
+    level PhysicianLevel required,
+    position PhysicianPosition required
+}
+
+entity Shift {
+    shiftDate LocalDate required,
+    type ShiftType required,
+    isWeekend Boolean required,
+    isNightShift Boolean required,
+    isTeachingShift Boolean required
+}
+
+entity Team {
+    type TeamType required
+}
+
+entity Roster {
+    startDate LocalDate required,
+    endDate LocalDate required
+}
+
+relationship OneToMany {
+    Roster to Shift
+}
+
+entity ShiftAssignmentPolicy {
+    maxConsecutiveShifts Integer required,
+    maxTotalShifts Integer required,
+    maxWeekendShifts Integer required,
+    maxNightShifts Integer required,
+    minDaysOffAfterNightShift Integer required,
+    shiftsPerWeek Integer required
+}
+
+entity Request {
+    requestType RequestType required,
+    requestDate LocalDate,
+    status RequestStatus required,
+}
+
+relationship ManyToOne {
+    Physician to Team,
+    ShiftAssignmentPolicy to Physician,
+    Request to Physician
+    Request to Shift
+}
+
+relationship ManyToMany {
+    Team{physician} to Physician{team},
+    Shift{team} to Team{shift}
+}
+
+service Physician, Shift, Team, Roster, ShiftAssignmentPolicy, Request with serviceClass
+
+paginate Physician, Shift, Team, Roster with pagination
+paginate ShiftAssignmentPolicy, Request with infinite-scroll
